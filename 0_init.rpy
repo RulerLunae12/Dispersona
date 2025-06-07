@@ -31,8 +31,8 @@ label show_dictionary:
     return
 
 label show_translation_screen(word):
-    $ temp_translation = get_translation(word) or ""
-    call screen enter_translation_screen(word=word)
+    $ temp_translation = persistent.human_dict.get(word, {}).get("translation", "")
+    call screen enter_translation_screen(word)
     return
 
 label dev_cleanup:
