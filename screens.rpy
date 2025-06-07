@@ -1738,8 +1738,7 @@ screen enter_translation_screen(word):
             spacing 10
             text "Введите перевод для: [word]"
 
-            input:
-                value VariableInputValue("temp_translation")
+            input value VariableInputValue("temp_translation"):
                 length 30
                 xsize 300
                 allow "abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьыъэюя -ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -1747,8 +1746,9 @@ screen enter_translation_screen(word):
 
             textbutton "Сохранить":
                 action [
+                    Function(print, f"🛠 До set_translation: {word} = {temp_translation}"),
                     Function(set_translation, word, temp_translation),
-                    Function(print, f"💾 Сохранено: {word} = {temp_translation}"),
+                    Function(print, f"💾 После: {persistent.human_dict}"),
                     Return()
                 ]
 
