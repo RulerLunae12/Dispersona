@@ -10,6 +10,8 @@ label start:
 
     $ persistent.human_dict = {}
 
+    $ clean_unused_words()
+
     window hide
     centered """
     Эта игра является художественным произведением в жанре Alternate Reality Game (ARG).
