@@ -27,12 +27,14 @@ init python:
 
     def set_translation(word, translation):
         word = normalize_word(word)
+        if persistent.human_dict is None:
+            persistent.human_dict = {}
         if word not in persistent.human_dict:
             persistent.human_dict[word] = {"translation": "", "known": True}
-        persistent.human_dict[word]["translation"] = translation.strip()
+        persistent.human_dict[word]["translation"] = translation
         persistent.human_dict[word]["known"] = True
         renpy.save_persistent()
-        print(f"💾 Сохранено: {word} = {translation.strip()}")
+
 
     def show_enter_translation(word):
         renpy.call_screen("enter_translation_screen", word=word)
