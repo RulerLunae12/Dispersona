@@ -8,8 +8,7 @@ define e = Character('ÃêÐ¯Û¥√╬µ', color="#ffff", what_callback=transl
 
 label start:
 
-    $ migrate_dictionary_format()
-    $ clean_unused_words()
+    $ persistent.human_dict = {}
 
     window hide
     centered """
