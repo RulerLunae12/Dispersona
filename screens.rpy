@@ -1696,8 +1696,9 @@ screen human_dictionary():
                             spacing 10
                             text "[word]:" size 22
                             input:
-                                value FieldValue(DictValue(temp_edits, word), "translation")
-                                length 40
+                                default temp_edits[word]["translation"]
+                                changed Function(set_translation_temp, word, temp_edits)
+                                length 50
 
             textbutton "Сохранить":
                 action [
@@ -1728,9 +1729,6 @@ screen dictionary_button():
 
 screen enter_translation_screen(word):
     modal True
-    default temp_translation = (
-        persistent.human_dict.get(word, {}).get("translation", "")
-    )
 
     frame:
         padding (20, 20)
