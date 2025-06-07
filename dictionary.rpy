@@ -26,18 +26,27 @@ init python:
         return ""
 
     def set_translation(word, translation):
+        print(f"[set_translation] word: {word}, translation: {translation}")
+        if not persistent.human_dict:
+            print("[set_translation] human_dict is None — инициализируем")
+            persistent.human_dict = {}
+        if word not in persistent.human_dict:
+            print(f"[set_translation] word '{word}' не найден — создаём")
+            persistent.human_dict[word] = {}
+        persistent.human_dict[word]["translation"] = translation
+        persistent.human_dict[word]["known"] = True
+        print(f"[set_translation] RESULT: {persistent.human_dict}")
+        renpy.save_persistent()
+
+    def show_enter_translation(word):
+        global temp_translation
         word = normalize_word(word)
         if persistent.human_dict is None:
             persistent.human_dict = {}
         if word not in persistent.human_dict:
             persistent.human_dict[word] = {"translation": "", "known": True}
-        persistent.human_dict[word]["translation"] = translation
-        persistent.human_dict[word]["known"] = True
-        renpy.save_persistent()
-
-
-    def show_enter_translation(word):
-        renpy.call_screen("enter_translation_screen", word=word)
+        temp_translation = persistent.human_dict[word]["translation"]
+        renpy.call_screen("enter_translation_screen", word)
 
     def translate_filter(text):
         def replacer(match):
@@ -56,6 +65,9 @@ init python:
 
     def is_valid_translation(text):
         return text.strip() != ""
+
+    def set_translation_temp(word, temp_edits, value):
+        temp_edits[word]["translation"] = value
 
     def clean_unused_words():
         """
