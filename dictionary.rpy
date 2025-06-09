@@ -6,6 +6,31 @@ label enter_translation(word):
 
 init python:
 
+    def register_word(word):
+        word = normalize_word(word)
+        if word not in persistent.human_dict:
+            persistent.human_dict[word] = ""
+
+    def migrate_human_dict():
+        if persistent.human_dict is None:
+            persistent.human_dict = {}
+        for word, val in list(persistent.human_dict.items()):
+            if isinstance(val, str):
+                persistent.human_dict[word] = {
+                    "translation": val,
+                    "known": bool(val.strip())
+                }
+
+    class SetDict(Action):
+        def __init__(self, dict_obj, key, value):
+            self.dict_obj = dict_obj
+            self.key = key
+            self.value = value
+
+        def __call__(self):
+            self.dict_obj[self.key] = self.value
+            renpy.restart_interaction()
+
     import re
     import os
     from renpy.text.text import Text
@@ -16,25 +41,43 @@ init python:
             return ""
         return word.strip().lower()
 
+    def normalize_human_dict():
+        if not isinstance(persistent.human_dict, dict):
+            persistent.human_dict = {}
+
+        for word, value in list(persistent.human_dict.items()):
+            if isinstance(value, str):
+                persistent.human_dict[word] = { "translation": value.strip() }
+
     def get_translation(word):
         word = normalize_word(word)
+        register_word(word)
+
         data = persistent.human_dict.get(word)
+
         if isinstance(data, dict):
             return data.get("translation", "")
         elif isinstance(data, str):
+            persistent.human_dict[word] = {
+                "translation": data,
+                "known": True
+            }
             return data
         return ""
 
     def set_translation(word, translation):
+        word = normalize_word(word)
         print(f"[set_translation] word: {word}, translation: {translation}")
-        if not persistent.human_dict:
-            print("[set_translation] human_dict is None — инициализируем")
+
+        if not isinstance(persistent.human_dict, dict):
+            print("[set_translation] human_dict is None или не dict — инициализируем")
             persistent.human_dict = {}
-        if word not in persistent.human_dict:
-            print(f"[set_translation] word '{word}' не найден — создаём")
-            persistent.human_dict[word] = {}
-        persistent.human_dict[word]["translation"] = translation
-        persistent.human_dict[word]["known"] = True
+
+        persistent.human_dict[word] = {
+            "translation": translation.strip(),
+            "known": True
+        }
+
         print(f"[set_translation] RESULT: {persistent.human_dict}")
         renpy.save_persistent()
 
@@ -52,16 +95,20 @@ init python:
         def replacer(match):
             word = match.group(1)
             cleaned = normalize_word(word)
+
+            if cleaned not in persistent.human_dict:
+                persistent.human_dict[cleaned] = { "translation": "", "known": False }
+
             translation = get_translation(cleaned)
 
+            result = "{a=translate:" + cleaned + "}"
             if translation:
-                return "{size=-10}" + translation + "\n{/size}" + word
-            else:
-                return "{a=translate:" + cleaned + "}" + word + "{/a}"
+                result += "{size=-10}" + translation + "\n{/size}"
+            result += word + "{/a}"
 
-        return re.sub(r"\{translate=(.*?)\}", replacer, text)
+            return result
 
-    config.hyperlink_handlers["translate"] = lambda word: renpy.call_in_new_context("show_translation_screen", word)
+        return re.sub(r"\{translate=(.*?)\}", replacer, text) 
 
     def is_valid_translation(text):
         return text.strip() != ""
