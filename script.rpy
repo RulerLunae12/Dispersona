@@ -8,24 +8,34 @@ define e = Character('ÃêÐ¯Û¥√╬µ', color="#ffff", what_callback=transl
 
 label start:
 
-    $ persistent.human_dict = {}
-
-    $ clean_unused_words()
+    init python:
+        clean_unused_words()
+        normalize_human_dict()
+        migrate_human_dict()
 
     window hide
-    centered """
+    scene black
+
+    show text"""
     Эта игра является художественным произведением в жанре Alternate Reality Game (ARG).
+
     В процессе игры вам могут быть предложены действия вне игрового окна:
     — запуск файлов,
     — взаимодействие с файлами на вашем компьютере,
     — закрытие игры в неожиданный момент.
+
     Никакие действия не производятся без вашего разрешения.
+
     Продолжая, вы соглашаетесь участвовать в экспериментальном интерактивном опыте.
 
     Если вы не готовы — закройте игру сейчас.
 
     Вы готовы продолжить?
     """ at truecenter with fade
+
+    with dissolve
+    pause
+    hide text
 
     menu:
             "Да": 
