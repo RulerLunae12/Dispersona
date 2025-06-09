@@ -10,7 +10,6 @@ init python:
     if persistent.human_dict is None or not isinstance(persistent.human_dict, dict):
         persistent.human_dict = {}
 
-
     config.say_menu_text_filter = None 
 
     style.dict_close_button = Style(style.button)
@@ -38,3 +37,6 @@ label show_translation_screen(word):
 label dev_cleanup:
     $ clean_unused_words()
     return
+
+init -1 python:
+    config.hyperlink_handlers["translate"] = lambda word: renpy.call_in_new_context("enter_translation", word)
