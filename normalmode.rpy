@@ -1,26 +1,19 @@
 label intro_text:
     scene black
 
-    "Ты слышишь слово: {translate=ul_shakh}."
+    "Ты слышишь слово: {a=translate:ul_shakh}ul_shakh{/a}."
+    
     "Ты не понимаешь, что это значит..."
 
-    "{translate=ul_shakh} — это слово для тестирования."
+    "{a=translate:ul_shakh}ul_shakh{/a} — это слово для тестирования."
 
-    "{translate=natare} — звучит очень глупо, но пока плевать, мы тестируем игру."
+    "{a=translate=natare}natare{/a} — звучит очень глупо, но пока плевать, мы тестируем игру."
 
-    "{translate=jarkla} — еще одна глупость, придуманная для тестирования."
-
+    "{a=translate=jarkla}jarkla{/a} — еще одна глупость, придуманная для тестирования."
 
     "Оооо магат"
 
     window hide
-    centered """
-
-    оооомагат"""
-
-
+    centered """оооомагат"""
 
     return
-
-
-
