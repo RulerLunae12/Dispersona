@@ -1667,9 +1667,9 @@ screen human_dictionary():
     tag menu
 
     default temp_edits = {
-        word: {"translation": data["translation"]}
+        word: {"translation": data["translation"] if isinstance(data, dict) else data}
         for word, data in persistent.human_dict.items()
-        if isinstance(data, dict) and data.get("translation", "").strip() != ""
+        if (isinstance(data, dict) and data.get("translation", "").strip() != "") or isinstance(data, str)
     }
 
     frame:
@@ -1692,13 +1692,21 @@ screen human_dictionary():
                     spacing 10
 
                     for word in sorted(temp_edits.keys()):
-                        hbox:
-                            spacing 10
-                            text "[word]:" size 22
-                            input:
-                                default temp_edits[word]["translation"]
-                                changed Function(set_translation_temp, word, temp_edits)
-                                length 50
+
+                            hbox:
+                                spacing 10
+
+                                text "[word]:" size 22 
+
+                                textbutton "[persistent.human_dict[word].get('translation', '') or 'Добавить перевод']":
+                                    action Call("edit_translation", word)
+                                    text_color "#e2007a"
+
+                                input:
+                                    default temp_edits[word]["translation"]
+                                    changed Function(set_translation_temp, word, temp_edits)
+                                    length 50
+
 
             textbutton "Сохранить":
                 action [
@@ -1725,9 +1733,11 @@ screen dictionary_button():
             tooltip "Словарь"
             action Function(renpy.call, "human_dictionary")
 
-    key "d" action Function(renpy.call, "human_dictionary")
+    key "w" action Function(renpy.call, "human_dictionary")
 
-screen enter_translation_screen(word):
+screen enter_translation_screen(word, translation=None):
+    default temp_translation = translation if translation is not None else ""
+
     modal True
 
     frame:
