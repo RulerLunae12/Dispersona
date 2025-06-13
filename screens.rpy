@@ -368,11 +368,9 @@ screen main_menu():
     ## заменять этот.
     tag menu
 
-    add gui.main_menu_background
+    add "gui/кассир3.png"
 
     ## Эта пустая рамка затеняет главное меню.
-    frame:
-        style "main_menu_frame"
 
     ## Оператор use включает отображение другого экрана в данном. Актуальное
     ## содержание главного меню находится на экране навигации.
@@ -1681,7 +1679,20 @@ screen human_dictionary():
 
         vbox:
             spacing 10
-            label _("Словарь") style "menu_label"
+            xfill True
+
+            hbox:
+                xfill True
+                spacing 10
+
+                label _("Словарь") style "menu_label" xalign 0.0
+
+                null xfill True 
+
+                textbutton _("Назад"):
+                    action Return()
+                    style "menu_button"
+                    xalign 1.0
 
             viewport:
                 draggable True
@@ -1698,27 +1709,9 @@ screen human_dictionary():
 
                                 text "[word]:" size 22 
 
-                                textbutton "[persistent.human_dict[word].get('translation', '') or 'Добавить перевод']":
+                                textbutton "[persistent.human_dict[word].get('translation', '') if isinstance(persistent.human_dict[word], dict) else persistent.human_dict[word] or 'Добавить перевод']":
                                     action Call("edit_translation", word)
                                     text_color "#e2007a"
-
-                                input:
-                                    default temp_edits[word]["translation"]
-                                    changed Function(set_translation_temp, word, temp_edits)
-                                    length 50
-
-
-            textbutton "Сохранить":
-                action [
-                    Function(update_translations, temp_edits),
-                    Function(renpy.save_persistent),
-                    Return()
-                ]
-                style "menu_button"
-
-            textbutton _("Назад"):
-                action Return()
-                style "menu_button"
 
 
 screen dictionary_button():
@@ -1735,13 +1728,15 @@ screen dictionary_button():
 
     key "w" action Function(renpy.call, "human_dictionary")
 
-screen enter_translation_screen(word, translation=None):
-    default temp_translation = translation if translation is not None else ""
-
+screen enter_translation_screen(word):
     modal True
+
+    default local_temp = get_translation(word)
 
     frame:
         padding (20, 20)
+        xalign 0.5
+        yalign 0.5
         vbox:
             spacing 10
             text "Введите перевод для: [word]"
@@ -1762,3 +1757,36 @@ screen enter_translation_screen(word, translation=None):
 
             textbutton "Отмена":
                 action Return()
+
+screen edit_translation_screen(word):
+    modal True
+
+    default local_temp = (
+        persistent.human_dict.get(word, {}).get("translation", "")
+        if isinstance(persistent.human_dict.get(word), dict)
+        else persistent.human_dict.get(word, "")
+    )
+
+    frame:
+        padding (20, 20)
+        xalign 0.5
+        yalign 0.5
+
+        vbox:
+            spacing 10
+            text "Редактирование перевода для: [word]"
+
+            input value VariableInputValue("local_temp"):
+                length 30
+                xsize 400
+                allow "abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьыъэюя -ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+                copypaste True
+
+            hbox:
+                spacing 20
+
+                textbutton "Сохранить":
+                    action Return("save")
+
+                textbutton "Отмена":
+                    action Return("cancel")
