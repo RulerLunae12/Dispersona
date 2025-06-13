@@ -8,13 +8,44 @@ define e = Character('ÃêÐ¯Û¥√╬µ', color="#ffff", what_callback=transl
 
 label start:
 
-    init python:
-        clean_unused_words()
-        normalize_human_dict()
-        migrate_human_dict()
+    $ normalize_human_dict()
+    $ migrate_human_dict()
+
+    if persistent.first_playthrough_done:
+        jump dict 
+    else:
+        jump prologue
+
+label dict:
 
     window hide
     scene black
+
+    show text"""
+    Ранее в оригинальном Homicipher распостраненной проблемой
+    было заполнение словаря... 
+
+    Игрокам приходилось снова и снова вводить одни и 
+    те же слова, чтобы понимать своих любимых героев.
+
+    В данной же фанатской игре мы решили сделать так, чтобы игроки сами решали, 
+    хотят ли они из разу в раз вводить слова, или же просто читать текст, 
+    не отвлекаясь на перевод одних и тех же слов.
+
+    Хотите очистить словарь?
+    """ at truecenter with fade
+    pause
+    hide text
+
+    menu:
+        "Да, очистить словарь":
+            $ clean_unused_words()
+            "Словарь очищен."
+
+        "Нет, не очищать словарь":
+            "Хорошо, продолжим."
+
+label prologue: 
 
     show text"""
     Эта игра является художественным произведением в жанре Alternate Reality Game (ARG).
@@ -45,6 +76,8 @@ label start:
 
 label name:
 
+    $ persistent.first_playthrough_done = True
+
     scene black
 
     "Как тебя зовут?"
@@ -65,18 +98,18 @@ label name:
 
             "Нет, я передумал!":
 
-                jump intro_text
+                jump name
 
     elif viname == "":
         "Ты не можешь оставить это поле пустым!"
 
-        jump start
-    
+        jump name
+
     else:
         jump intro_text
 
-
 label hardmode:
+
     scene black
 
     ##экран темный, шорох, Адами просыпается и поднимается с колен. видим стартовую сцену из оригинальной игры
