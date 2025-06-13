@@ -1,7 +1,18 @@
-label enter_translation(word):
-    $ print("📝 Вход в экран перевода для:", word)
-    $ translation = get_translation(word)
-    call screen enter_translation_screen(word=word, translation=translation)
+init -10 python:
+    def translate_handler(word):
+        print(f"[translate handler] Clicked on: {word}")
+        renpy.call_in_new_context("call_translation", word)
+
+    config.hyperlink_handlers["translate"] = translate_handler
+
+label call_translation(word):
+    call enter_translation_screen(word) from _call_enter_translation_screen
+    return
+
+label enter_translation_screen(word):
+    $ value = persistent.human_dict.get(word, "")
+    $ temp_translation = value.get("translation", "") if isinstance(value, dict) else value
+    call screen enter_translation_screen(word=word)
     return
 
 init python:
@@ -37,7 +48,6 @@ init python:
 
     def normalize_word(word):
         if not word:
-            renpy.log("[WARNING] normalize_word получил пустое или None слово")
             return ""
         return word.strip().lower()
 
@@ -82,33 +92,42 @@ init python:
         renpy.save_persistent()
 
     def show_enter_translation(word):
-        global temp_translation
         word = normalize_word(word)
-        if persistent.human_dict is None:
-            persistent.human_dict = {}
-        if word not in persistent.human_dict:
-            persistent.human_dict[word] = {"translation": "", "known": True}
-        temp_translation = persistent.human_dict[word]["translation"]
-        renpy.call_screen("enter_translation_screen", word)
+        translation = get_translation(word)
+        renpy.call_screen("enter_translation_screen", word=word, translation=translation)
 
     def translate_filter(text):
-        def replacer(match):
+        def tag_replacer(match):
             word = match.group(1)
-            cleaned = normalize_word(word)
+            return process_word(word, word)
+
+        def a_replacer(match):
+            word = match.group(1)
+            content = match.group(2)
+            return process_word(word, content)
+
+        def process_word(word_key, display_word):
+            cleaned = normalize_word(word_key)
 
             if cleaned not in persistent.human_dict:
-                persistent.human_dict[cleaned] = { "translation": "", "known": False }
+                persistent.human_dict[cleaned] = {"translation": "", "known": False}
 
             translation = get_translation(cleaned)
 
             result = "{a=translate:" + cleaned + "}"
             if translation:
                 result += "{size=-10}" + translation + "\n{/size}"
-            result += word + "{/a}"
+            result += display_word + "{/a}"
 
             return result
 
-        return re.sub(r"\{translate=(.*?)\}", replacer, text) 
+        text = re.sub(r"\{translate=(.*?)\}", tag_replacer, text)
+
+        text = re.sub(r"\{a=translate:(.*?)\}(.*?)\{/a\}", a_replacer, text)
+
+        return text
+
+    """заваліть їбвльнікі я люблю купальнікі коли їх мало заваліть ебало"""
 
     def is_valid_translation(text):
         return text.strip() != ""
@@ -116,10 +135,7 @@ init python:
     def set_translation_temp(word, temp_edits, value):
         temp_edits[word]["translation"] = value
 
-    def clean_unused_words():
-        """
-        Удаляет слова, которые не используются в .rpy-файлах.
-        """
+    def clean_unused_words():    
         used_words = set()
 
         for root, dirs, files in os.walk("game"):
@@ -138,7 +154,6 @@ init python:
             del persistent.human_dict[word]
 
         renpy.save_persistent()
-        renpy.notify(f"Удалено {len(unused_words)} неактивных слов.")
 
     def update_translations(temp_edits):
         for word, data in temp_edits.items():
@@ -158,3 +173,11 @@ init python:
             for word, data in persistent.human_dict.items()
             if isinstance(data, dict) and data.get("translation", "").strip() != ""
         }
+
+label edit_translation(word):
+    $ local_temp = ""
+    call screen edit_translation_screen(word)
+    if _return == "save":
+        $ persistent.human_dict[word] = local_temp
+        $ renpy.save_persistent()
+    return
