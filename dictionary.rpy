@@ -127,8 +127,6 @@ init python:
 
         return text
 
-    """заваліть їбвльнікі я люблю купальнікі коли їх мало заваліть ебало"""
-
     def is_valid_translation(text):
         return text.strip() != ""
 
