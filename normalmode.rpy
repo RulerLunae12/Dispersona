@@ -1,19 +1,22 @@
 label intro_text:
-    scene black
 
-    "Ты слышишь слово: {a=translate:ul_shakh}ul_shakh{/a}."
-    
-    "Ты не понимаешь, что это значит..."
+    $ dictionary_button = True
 
-    "{a=translate:ul_shakh}ul_shakh{/a} — это слово для тестирования."
+    image bg scary_room = "images/bg_scary_room.png"
+    scene bg scary_room
 
-    "{a=translate=natare}natare{/a} — звучит очень глупо, но пока плевать, мы тестируем игру."
+    "Ты слышишь слово: {a=translate:Привет}{font=Homifont.ttf}Привет{/font}{/a}."
 
-    "{a=translate=jarkla}jarkla{/a} — еще одна глупость, придуманная для тестирования."
+    "{font=Homifont.ttf}Ты не понимаешь, что это значит...{font}"
+
+    "Ты слышишь слово: {a=translate:Пока}{font=Homifont.ttf}Пока{/font}{/a}."
+
+    "Ты не слышишь слово: {a=translate:пиписька}{font=Homifont.ttf}пиписька{/font}{/a}."
+
+    "{a=translate:Бутерброд}{font=Homifont.ttf}Бутерброд{/font}{/a} — звучит очень глупо, но пока плевать, мы тестируем игру."
+
+    "{a=translate:Колюаса}{font=Homifont.ttf}Колюаса{/font}{/a} — еще одна глупость, придуманная для тестирования."
 
     "Оооо магат"
-
-    window hide
-    centered """оооомагат"""
 
     return
