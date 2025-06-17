@@ -5,23 +5,20 @@ default selected_word = None
 default persistent.first_cleanup_done = False
 define local_temp = ""
 default persistent.first_playthrough_done = False
+default dictionary_button = True
+
+define homifont = "fonts/Homifont.ttf"
 
 init python:
+
+    dictionary_button = False
 
     if persistent.human_dict is None or not isinstance(persistent.human_dict, dict):
         persistent.human_dict = {}
 
     config.say_menu_text_filter = None 
 
-    style.dict_close_button = Style(style.button)
-    style.dict_close_button.size = 18
-    style.dict_close_button.padding = (5, 10)
-    style.dict_close_button.xminimum = 100
-    style.dict_close_button.background = None
-
-    style.dict_close_button_text = Style(style.button_text)
-    style.dict_close_button_text.color = "#ff0088"
-    style.dict_close_button_text.hover_color = "#888"
+    config.overlay_screens.append("show_dictionary_button")
 
 label show_dictionary:
     $ _window_hide()
