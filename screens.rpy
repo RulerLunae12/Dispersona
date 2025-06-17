@@ -109,20 +109,6 @@ screen say(who, what):
                     text who id "who"
 
             text what id "what" substitute True
-    
-    # Кнопка для вызова словаря
-    frame:
-        style "default"
-        xalign 0.98
-        yalign 0.02
-        background None
-        has vbox
-
-        imagebutton:
-            idle "gui/icons/Писька.png"
-            hover "gui/icons/Писька2.png"
-            tooltip "Словарь"
-            action ShowMenu("human_dictionary")
 
     ## Если есть боковое изображение ("голова"), показывает её поверх текста.
     ## По стандарту не показывается на варианте для мобильных устройств — мало
@@ -1661,8 +1647,18 @@ screen chthon_dialogue(text):
                             SetVariable("temp_translation", translation if translation else "")
                         ]
 
+transform fadein_all:
+    alpha 0.0
+    linear 0.6 alpha 1.0
+
+transform fadeout_all:
+    alpha 1.0
+    linear 0.5 alpha 0.0
+
 screen human_dictionary():
     tag menu
+    modal True
+    default closing = False
 
     default temp_edits = {
         word: {"translation": data["translation"] if isinstance(data, dict) else data}
@@ -1670,76 +1666,104 @@ screen human_dictionary():
         if (isinstance(data, dict) and data.get("translation", "").strip() != "") or isinstance(data, str)
     }
 
-    frame:
-        style "menu_frame"
-        xsize 800
-        ysize 600
-        xalign 0.5
-        yalign 0.5
+    fixed:
+        at (fadeout_all if closing else fadein_all)
+        add Solid("#000C")
 
-        vbox:
-            spacing 10
-            xfill True
+        frame:
+            style "menu_frame"
+            xsize 800
+            ysize 600
+            xalign 0.5
+            yalign 0.5
 
-            hbox:
-                xfill True
+            vbox:
                 spacing 10
+                xfill True
 
-                label _("Словарь") style "menu_label" xalign 0.0
-
-                null xfill True 
-
-                textbutton _("Назад"):
-                    action Return()
-                    style "menu_button"
-                    xalign 1.0
-
-            viewport:
-                draggable True
-                mousewheel True
-                scrollbars "vertical"
-
-                vbox:
+                hbox:
+                    xfill True
                     spacing 10
 
-                    for word in sorted(temp_edits.keys()):
+                    label _("Словарь") style "menu_label" xalign 0.0
+                    null xfill True 
+                    textbutton _("Назад"):
+                        action SetScreenVariable("closing", True)
+                        style "menu_button"
+                        xalign 1.0
 
+                viewport:
+                    draggable True
+                    mousewheel True
+                    scrollbars "vertical"
+
+                    vbox:
+                        spacing 10
+
+                        for word in sorted(temp_edits.keys()):
                             hbox:
                                 spacing 10
-
-                                text "[word]:" size 22 
-
+                                text "{font=Homifont.ttf}[word]{/font}:" size 22 
                                 textbutton "[persistent.human_dict[word].get('translation', '') if isinstance(persistent.human_dict[word], dict) else persistent.human_dict[word] or 'Добавить перевод']":
                                     action Call("edit_translation", word)
                                     text_color "#e2007a"
 
+    if closing:
+        timer 0.6 action Return()
 
-screen dictionary_button():
+screen show_dictionary_button():
+    if dictionary_button:
+
+        frame:
+            style "empty"
+            xalign 1.0
+            yalign 0.0
+            padding (10, 10)
+            background None
+            xysize (100, 100)
+
+            imagebutton:
+                idle "gui/icons/Писька.png"
+                hover "gui/icons/Писька2.png"
+                tooltip "Словарь"
+                area (0, 0, 100, 100)
+                background None
+                padding (0, 0)
+                margin (0, 0)
+                focus_mask None
+                action Function(renpy.call_in_new_context, "show_dictionary")
+
+
+    key "d" action If(not renpy.has_screen("human_dictionary"), Start("show_dictionary"))
+
+
+screen main_ui():
+
     frame:
-        xalign 1.0
-        yalign 0.0
-        padding (10, 10)
+        style "default"
+        xfill True
+        ysize 40
+        background "#0008"
 
-        imagebutton:
-            idle "gui/icons/Писька.png"
-            hover "gui/icons/Писька2.png"
-            tooltip "Словарь"
-            action Function(renpy.call, "human_dictionary")
-
-    key "w" action Function(renpy.call, "human_dictionary")
+    if dictionary_button:
+        use show_dictionary_button()
 
 screen enter_translation_screen(word):
     modal True
-
     default local_temp = get_translation(word)
+    default closing = False
+
+    add Solid("#000C") at (fadeout_all if closing else fadein_all)
 
     frame:
-        padding (20, 20)
+        at (fadeout_all if closing else fadein_all)
         xalign 0.5
         yalign 0.5
+        padding (20, 20)
+
         vbox:
             spacing 10
-            text "Введите перевод для: [word]"
+            text "Введите перевод для: {font=Homifont.ttf}[word]{/font}"
 
             input value VariableInputValue("temp_translation"):
                 length 30
@@ -1747,19 +1771,28 @@ screen enter_translation_screen(word):
                 allow "abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьыъэюя -ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
                 copypaste True
 
-            textbutton "Сохранить":
-                action [
-                    Function(print, f"🛠 До set_translation: {word} = {temp_translation}"),
-                    Function(set_translation, word, temp_translation),
-                    Function(print, f"💾 После: {persistent.human_dict}"),
-                    Return()
-                ]
+            hbox:
+                spacing 20
 
-            textbutton "Отмена":
-                action Return()
+                textbutton "Сохранить":
+                    action [
+                        Function(print, f"🛠 До set_translation: {word} = {temp_translation}"),
+                        Function(set_translation, word, temp_translation),
+                        Function(print, f"💾 После: {persistent.human_dict}"),
+                        SetScreenVariable("closing", True)
+                    ]
+
+                textbutton "Отмена":
+                    action SetScreenVariable("closing", True)
+
+    if closing:
+        timer 0.6 action Return()
 
 screen edit_translation_screen(word):
     modal True
+    default closing = False
+
+    add Solid("#000C") at (fadeout_all if closing else fadein_all)
 
     default local_temp = (
         persistent.human_dict.get(word, {}).get("translation", "")
@@ -1768,13 +1801,14 @@ screen edit_translation_screen(word):
     )
 
     frame:
+        at (fadeout_all if closing else fadein_all)
         padding (20, 20)
         xalign 0.5
         yalign 0.5
 
         vbox:
             spacing 10
-            text "Редактирование перевода для: [word]"
+            text "Редактирование перевода для: {font=Homifont.ttf}[word]{/font}"
 
             input value VariableInputValue("local_temp"):
                 length 30
@@ -1786,7 +1820,14 @@ screen edit_translation_screen(word):
                 spacing 20
 
                 textbutton "Сохранить":
-                    action Return("save")
+                    action [
+                        Function(set_translation, word, local_temp),
+                        SetScreenVariable("closing", True)
+                    ]
 
                 textbutton "Отмена":
-                    action Return("cancel")
+                    action SetScreenVariable("closing", True)
+
+    if closing:
+        timer 0.8 action Return()
+
