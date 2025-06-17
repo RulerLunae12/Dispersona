@@ -8,6 +8,8 @@ define e = Character('ÃêÐ¯Û¥√╬µ', color="#ffff", what_callback=transl
 
 label start:
 
+    $ dictionary_button = False
+
     $ normalize_human_dict()
     $ migrate_human_dict()
 
@@ -17,6 +19,8 @@ label start:
         jump prologue
 
 label dict:
+
+    $ dictionary_button = False
 
     window hide
     scene black
@@ -39,13 +43,16 @@ label dict:
 
     menu:
         "Да, очистить словарь":
-            $ clean_unused_words()
+            $ persistent.human_dict.clear()
+            $ renpy.save_persistent()
             "Словарь очищен."
 
         "Нет, не очищать словарь":
             "Хорошо, продолжим."
 
 label prologue: 
+
+    $ dictionary_button = False
 
     show text"""
     Эта игра является художественным произведением в жанре Alternate Reality Game (ARG).
@@ -75,6 +82,8 @@ label prologue:
                 $ renpy.quit()
 
 label name:
+
+    $ dictionary_button = False
 
     $ persistent.first_playthrough_done = True
 
@@ -109,6 +118,8 @@ label name:
         jump intro_text
 
 label hardmode:
+
+    $ dictionary_button = False
 
     scene black
 
