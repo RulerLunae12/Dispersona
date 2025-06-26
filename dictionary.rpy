@@ -1,18 +1,11 @@
 init -10 python:
-    def translate_handler(word):
-        print(f"[translate handler] Clicked on: {word}")
+    def call_translation(word):
         renpy.call_in_new_context("call_translation", word)
 
-    config.hyperlink_handlers["translate"] = translate_handler
+    config.hyperlink_handlers.clear()
 
 label call_translation(word):
     call enter_translation_screen(word) from _call_enter_translation_screen
-    return
-
-label enter_translation_screen(word):
-    $ value = persistent.human_dict.get(word, "")
-    $ temp_translation = value.get("translation", "") if isinstance(value, dict) else value
-    call screen enter_translation_screen(word=word)
     return
 
 init python:
@@ -88,7 +81,6 @@ init python:
             "known": True
         }
 
-        print(f"[set_translation] RESULT: {persistent.human_dict}")
         renpy.save_persistent()
 
     def show_enter_translation(word):
@@ -96,42 +88,40 @@ init python:
         translation = get_translation(word)
         renpy.call_screen("enter_translation_screen", word=word, translation=translation)
 
-    def translate_filter(text):
-        def tag_replacer(match):
-            word = match.group(1)
-            return process_word(word, word)
+    def combined_filter(text):
+        import re
 
-        def a_replacer(match):
-            word = match.group(1)
-            content = match.group(2)
-            return process_word(word, content)
+        if isinstance(text, renpy.text.text.Text):
+            text = text.text
 
-        def process_word(word_key, display_word):
-            cleaned = normalize_word(word_key)
+        def replace_tr_tag(match):
+            key = match.group(1).strip().lower()
+            word = match.group(2)
+            translation = get_translation(key)
+            if not translation:
+                translation = "[неизвестно]"
+            return f"{{a=translate:{key}}}{{rb}}{word}{{/rb}}{{rt}}{translation}{{/rt}}{{/a}}"
 
-            if cleaned not in persistent.human_dict:
-                persistent.human_dict[cleaned] = {"translation": "", "known": False}
+        pattern_tr = r"\{a=translate:(.*?)\}\{rb\}(.*?)\{/rb\}\{rt\}__tr__\{/rt\}\{/a\}"
+        text = re.sub(pattern_tr, replace_tr_tag, text)
 
-            translation = get_translation(cleaned)
+        def replace_ruby(match):
+            key = match.group(1).strip().lower()
+            word = match.group(2).strip()
+            translation = get_translation(key)
+            if not translation:
+                translation = "???"
+            return f"{{a=translate:{key}}}{{color=#1976b9}}{{font=Homifont.ttf}}{{rb}}{word}{{/rb}}{{rt}}{translation}{{/rt}}{{/font}}{{/color}}{{/a}}"
 
-            result = "{a=translate:" + cleaned + "}"
-            if translation:
-                result += "{size=-10}" + translation + "\n{/size}"
-            result += display_word + "{/a}"
 
-            return result
-
-        text = re.sub(r"\{translate=(.*?)\}", tag_replacer, text)
-
-        text = re.sub(r"\{a=translate:(.*?)\}(.*?)\{/a\}", a_replacer, text)
+        pattern_ruby = r"\[\[t:(.*?):(.*?)\]\]"
+        text = re.sub(pattern_ruby, replace_ruby, text) 
 
         return text
 
+
     def is_valid_translation(text):
         return text.strip() != ""
-
-    def set_translation_temp(word, temp_edits, value):
-        temp_edits[word]["translation"] = value
 
     def clean_unused_words():    
         used_words = set()
