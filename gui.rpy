@@ -26,7 +26,7 @@ define config.check_conflicting_properties = True
 ## Цвета текста в интерфейсе.
 
 ## Акцентный цвет используется в заголовках и подчёркнутых текстах.
-define gui.accent_color = '#cc0066'
+define gui.accent_color = '#768A93'
 
 ## Цвет, используемый в текстовой кнопке, когда она не выбрана и не наведена.
 define gui.idle_color = '#888888'
@@ -36,7 +36,7 @@ define gui.idle_color = '#888888'
 define gui.idle_small_color = '#aaaaaa'
 
 ## Цвет, используемых в кнопках и панелях, когда они наведены.
-define gui.hover_color = '#e066a3'
+define gui.hover_color = '#768A93'
 
 ## Цвет, используемый текстовой кнопкой, когда она выбрана, но не наведена.
 ## Кнопка может быть выбрана, если это текущий экран или текущее значение
@@ -48,8 +48,8 @@ define gui.insensitive_color = '#8888887f'
 
 ## Цвета, используемые для частей панелей, которые не заполняются. Они
 ## используются не напрямую, а только при воссоздании файлов изображений.
-define gui.muted_color = '#510028'
-define gui.hover_muted_color = '#7a003d'
+define gui.muted_color = '#28363c'
+define gui.hover_muted_color = '#00457a'
 
 ## Цвета, используемые в тексте диалогов и выборов.
 define gui.text_color = '#ffffff'
@@ -418,7 +418,6 @@ define gui.nvl_button_xalign = 0.0
 
 define gui.language = "unicode"
 
-
 ################################################################################
 ## Мобильные устройства
 ################################################################################
@@ -484,3 +483,15 @@ init python:
 
         gui.nvl_button_width = 1860
         gui.nvl_button_xpos = 30
+
+############### Тут помещаем стиль для словаря ######################
+
+style dictionary_word is default:
+    font "Homifont.ttf"
+    size 28
+    color "#ffffff"
+
+style dictionary_translation is default:
+    size 28
+    color "#056490"
+    italic True
