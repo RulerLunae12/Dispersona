@@ -216,4 +216,4 @@ init python:
 
 
 define config.say_menu_text_filter = translate_filter
-
+config.overlay_screens.append("key_handler")
