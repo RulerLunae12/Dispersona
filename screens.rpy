@@ -93,31 +93,35 @@ style frame:
 ## применить к ним настройки стиля.
 ##
 ## https://www.renpy.org/doc/html/screen_special.html#say
-
+ 
 screen say(who, what):
     tag say
 
     window:
+        id "window" 
         style "say_window"
+        xalign 0.5
+        yalign 1.0
+        xsize 1980
+        ysize 280
+        background Transform("gui/textbox_1.png", xsize=1980, ysize=280)
 
         vbox:
-            spacing 10
+            spacing 15
+            xfill True 
+            xpos 260    
 
             if who is not None:
-                window:
-                    style "namebox"
-                    text who id "who"
+                text who id "who":
+                    style "say_label"
+                    xalign 0.0
+                    textalign 0.0
 
-            text what id "what" substitute True
+            text what id "what" substitute True:
+                style "say_dialogue"
+                layout "subtitle"
+                textalign 0.0
 
-    ## Если есть боковое изображение ("голова"), показывает её поверх текста.
-    ## По стандарту не показывается на варианте для мобильных устройств — мало
-    ## места.
-    if not renpy.variant("small"):
-        add SideImage() xalign 0.0 yalign 1.0
-
-
-## Делает namebox доступным для стилизации через объект Character.
 init python:
     config.character_id_prefixes.append('namebox')
 
@@ -125,10 +129,14 @@ style window is default
 style say_label is default
 style say_dialogue is default
 style say_thought is say_dialogue
+style say_window is default
 
 style namebox is default
 style namebox_label is say_label
 
+style say_window:
+    xfill True
+    ypadding 30
 
 style window:
     xalign 0.5
@@ -136,7 +144,7 @@ style window:
     yalign gui.textbox_yalign
     ysize gui.textbox_height
 
-    background Image("gui/textbox.png", xalign=0.5, yalign=1.0)
+    background Image("gui/textbox_1.png", xalign=0.5, yalign=1.0)
 
 style namebox:
     xpos gui.name_xpos
@@ -149,18 +157,21 @@ style namebox:
     padding gui.namebox_borders.padding
 
 style say_label:
-    properties gui.text_properties("name", accent=True)
-    xalign gui.name_xalign
-    yalign 0.5
+    size 40
+    color "#FFFFFF"
+    bold True
+    xalign 0.0
+    textalign 0.0
+
 
 style say_dialogue:
-    properties gui.text_properties("dialogue")
+    size 32
+    color "#FFFFFF"
+    xalign 0.0
+    textalign 0.0
+    line_spacing 4
+    layout "subtitle"  # Убирает "ёлочку"
 
-    xpos gui.dialogue_xpos
-    xsize gui.dialogue_width
-    ypos gui.dialogue_ypos
-
-    adjust_spacing False
 
 ## Экран ввода #################################################################
 ##
@@ -173,9 +184,12 @@ style say_dialogue:
 ## https://www.renpy.org/doc/html/screen_special.html#input
 
 screen input(prompt):
-    style_prefix "input"
-
+    
     window:
+        style "input_window"
+        xsize 1980
+        ysize 280
+        background Transform("gui/textbox_1.png", xsize=1980, ysize=280)
 
         vbox:
             xanchor gui.dialogue_text_xalign
@@ -350,35 +364,72 @@ style navigation_button_text:
 
 screen main_menu():
 
-    ## Этот тег гарантирует, что любой другой экран с тем же тегом будет
-    ## заменять этот.
     tag menu
 
-    add "gui/кассир3.png"
+    add "gui/кассир3.png" 
 
-    ## Эта пустая рамка затеняет главное меню.
+    text "Dispersona":
+        style "main_menu_title"
 
-    ## Оператор use включает отображение другого экрана в данном. Актуальное
-    ## содержание главного меню находится на экране навигации.
-    use navigation
+    text "Demo" style "mainmenu_version"
 
-    if gui.show_name:
+    vbox:
+        spacing 10
+        style_prefix "menu_button"
 
-        vbox:
-            style "main_menu_vbox"
-
-            text "[config.name!t]":
-                style "main_menu_title"
-
-            text "[config.version]":
-                style "main_menu_version"
+        textbutton "НАЧАТЬ" action Start() style "mainmenu_button" text_style "mainmenu_button_text"
+        textbutton "ЗАГРУЗИТЬ" action ShowMenu("load") style "mainmenu_button" text_style "mainmenu_button_text"
+        textbutton "НАСТРОЙКИ" action ShowMenu("preferences") style "mainmenu_button" text_style "mainmenu_button_text"
+        textbutton "ОБ ИГРЕ" action ShowMenu("about") style "mainmenu_button" text_style "mainmenu_button_text"
+        textbutton "ПОМОЩЬ" action ShowMenu("help") style "mainmenu_button" text_style "mainmenu_button_text"
+        textbutton "ВЫХОД" action Quit(confirm=True) style "mainmenu_button" text_style "mainmenu_button_text"
 
 
 style main_menu_frame is empty
 style main_menu_vbox is vbox
 style main_menu_text is gui_text
-style main_menu_title is main_menu_text
-style main_menu_version is main_menu_text
+
+# Стили
+style main_menu_title is default:
+    font "AmaticSC-Regular.ttf"
+    size 232
+    color "#2f2328"
+    xalign 0.8
+    yalign 0.1
+    xmaximum 2000
+    ymaximum 400
+
+style mainmenu_button is default:
+    font "AmaticSC-Regular.ttf"
+    size 50
+    background None
+    hover_background None
+    xpos 145
+    ypos 143
+    color "#111111"
+    hover_color "#a09696"
+    kerning 3
+    outlines [  ]
+
+style mainmenu_version is default:
+    font "AmaticSC-Bold.ttf"
+    size 35
+    color "#2f2328"
+    xalign 0.884
+    yalign 0.32
+    xoffset -30
+    yoffset -20
+
+style mainmenu_button_text is default:
+    font "AmaticSC-Regular.ttf"
+    size 50
+    background None
+    hover_background None
+    color "#111111"
+    hover_color "#a09696"
+    kerning 3
+    outlines [  ]
+
 
 style main_menu_frame:
     xsize 420
@@ -392,15 +443,6 @@ style main_menu_vbox:
     xmaximum 1200
     yalign 1.0
     yoffset -30
-
-style main_menu_text:
-    properties gui.text_properties("main_menu", accent=True)
-
-style main_menu_title:
-    properties gui.text_properties("title")
-
-style main_menu_version:
-    properties gui.text_properties("version")
 
 
 ## Экран игрового меню #########################################################
@@ -1608,52 +1650,26 @@ style slider_slider:
     variant "small"
     xsize 900
 
-screen chthon_dialogue(text):
-    default current_edit_word = None
-    default temp_translation = ""
-
-    frame:
-        padding 20
-        has hbox spacing 10
-
-        for word in text.split(" "):
-
-            $ cleaned_word = normalize_word(word)
-            $ translation = get_translation(cleaned_word)
-
-            vbox:
-                spacing 3
-
-                if current_edit_word == cleaned_word:
-                    input:
-                        value VariableInputValue("temp_translation")
-                        length 50
-                        xminimum 150
-
-                    textbutton "Сохранить":
-                        action [
-                            Function(set_translation, cleaned_word, temp_translation),
-                            SetVariable("current_edit_word", None),
-                            Function(renpy.save_persistent)
-                        ]
-
-                else:
-                    if translation:
-                        text "[translation]" size 18 color "#888"
-
-                    textbutton word:
-                        action [
-                            SetVariable("current_edit_word", cleaned_word),
-                            SetVariable("temp_translation", translation if translation else "")
-                        ]
-
 transform fadein_all:
     alpha 0.0
-    linear 0.6 alpha 1.0
+    linear 0.8 alpha 1.0
 
 transform fadeout_all:
     alpha 1.0
     linear 0.5 alpha 0.0
+
+style ruby_style is default:
+    size 24
+    yoffset -35
+    color None
+
+style say_dialogue:
+    ruby_line_leading 12
+    ruby_style style.ruby_style
+
+style history_text:
+    ruby_line_leading 12
+    ruby_style style.ruby_style
 
 screen human_dictionary():
     tag menu
@@ -1666,50 +1682,73 @@ screen human_dictionary():
         if (isinstance(data, dict) and data.get("translation", "").strip() != "") or isinstance(data, str)
     }
 
-    fixed:
-        at (fadeout_all if closing else fadein_all)
-        add Solid("#000C")
+    fixed at (fadeout_all if closing else fadein_all):
+        add Solid("#000C") xysize (config.screen_width, config.screen_height)
 
         frame:
-            style "menu_frame"
-            xsize 800
-            ysize 600
+            background "gui/blocknote/bn.png"
+            xsize 600
+            ysize 800
             xalign 0.5
             yalign 0.5
 
-            vbox:
-                spacing 10
-                xfill True
+            has fixed:
+                xpos 0
+                ypos 0
+                xsize 600
+                ysize 800
 
-                hbox:
-                    xfill True
-                    spacing 10
+            label _("Словарь") xalign 0.4 ypos 25 text_color "#222"
 
-                    label _("Словарь") style "menu_label" xalign 0.0
-                    null xfill True 
-                    textbutton _("Назад"):
-                        action SetScreenVariable("closing", True)
-                        style "menu_button"
-                        xalign 1.0
+            imagebutton:
+                idle "gui/blocknote/bn_x_0.png"
+                hover "gui/blocknote/bn_x_1.png"
+                action SetScreenVariable("closing", True)
+                xalign 0.78
+                yalign 0.032 
+                focus_mask True
 
-                viewport:
-                    draggable True
-                    mousewheel True
-                    scrollbars "vertical"
+            imagebutton:
+                idle "gui/blocknote/bn_right_1.png"
+                hover "gui/blocknote/bn_right_0.png"
+                action SetScreenVariable("closing", True)
+                xalign 0.77
+                yalign 0.88
+                focus_mask True
 
-                    vbox:
-                        spacing 10
+            viewport:
+                xsize 520
+                ysize 640
+                xpos 70
+                ypos 100
+                mousewheel True
+                draggable True
+                clipping True
 
-                        for word in sorted(temp_edits.keys()):
-                            hbox:
-                                spacing 10
-                                text "{font=Homifont.ttf}[word]{/font}:" size 22 
-                                textbutton "[persistent.human_dict[word].get('translation', '') if isinstance(persistent.human_dict[word], dict) else persistent.human_dict[word] or 'Добавить перевод']":
-                                    action Call("edit_translation", word)
-                                    text_color "#e2007a"
+                vbox:
+                    spacing 4
+
+                    for word in sorted(temp_edits.keys()):
+                        hbox:
+                            spacing 12
+                            xfill True
+                            yalign 0.5
+
+                            text "{font=Homifont.ttf}[word]{/font}" size 22 xsize 180 yalign 0.5
+
+                            textbutton (
+                                persistent.human_dict[word].get("translation", "")
+                                if isinstance(persistent.human_dict[word], dict)
+                                else persistent.human_dict[word] or "Добавить перевод"
+                            ):
+                                action Call("edit_translation", word)
+                                text_color "#01141b"
+                                background None
+                                yalign 0.5
+                                text_style "dictionary_translation"
 
     if closing:
-        timer 0.6 action Return()
+        timer 0.8 action Return("human_dictionary")
 
 screen show_dictionary_button():
     if dictionary_button:
@@ -1733,39 +1772,33 @@ screen show_dictionary_button():
                 focus_mask None
                 action Function(renpy.call_in_new_context, "show_dictionary")
 
-
-    key "d" action If(not renpy.has_screen("human_dictionary"), Start("show_dictionary"))
-
-
-screen main_ui():
-
-    frame:
-        style "default"
-        xfill True
-        ysize 40
-        background "#0008"
-
-    if dictionary_button:
-        use show_dictionary_button()
-
-screen enter_translation_screen(word):
+screen enter_translation_screen(word, translation=None):
     modal True
-    default local_temp = get_translation(word)
     default closing = False
+
+    on "show" action Hide("say")
+    on "hide" action Show("say")
+
+    if not hasattr(store, "temp_translation") or temp_translation is None:
+        $ temp_translation = translation or ""
 
     add Solid("#000C") at (fadeout_all if closing else fadein_all)
 
+    add "gui/blocknote/frame.png" xalign 0.5 yalign 0.5
+
     frame:
         at (fadeout_all if closing else fadein_all)
-        xalign 0.5
-        yalign 0.5
         padding (20, 20)
+        xalign 0.45
+        yalign 0.4
+        background None
 
         vbox:
             spacing 10
-            text "Введите перевод для: {font=Homifont.ttf}[word]{/font}"
+            text "{color=#000000} Введите перевод для: {font=Homifont.ttf}[word]{/font}" xalign 0.1
 
-            input value VariableInputValue("temp_translation"):
+            input:
+                value VariableInputValue("temp_translation")
                 length 30
                 xsize 300
                 allow "abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьыъэюя -ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -1774,15 +1807,13 @@ screen enter_translation_screen(word):
             hbox:
                 spacing 20
 
-                textbutton "Сохранить":
+                textbutton "{color=#000000} Сохранить":
                     action [
-                        Function(print, f"🛠 До set_translation: {word} = {temp_translation}"),
                         Function(set_translation, word, temp_translation),
-                        Function(print, f"💾 После: {persistent.human_dict}"),
                         SetScreenVariable("closing", True)
                     ]
 
-                textbutton "Отмена":
+                textbutton "{color=#000000} Отмена":
                     action SetScreenVariable("closing", True)
 
     if closing:
@@ -1794,21 +1825,18 @@ screen edit_translation_screen(word):
 
     add Solid("#000C") at (fadeout_all if closing else fadein_all)
 
-    default local_temp = (
-        persistent.human_dict.get(word, {}).get("translation", "")
-        if isinstance(persistent.human_dict.get(word), dict)
-        else persistent.human_dict.get(word, "")
-    )
+    add "gui/blocknote/frame.png" xalign 0.5 yalign 0.5
 
     frame:
         at (fadeout_all if closing else fadein_all)
         padding (20, 20)
-        xalign 0.5
-        yalign 0.5
+        xalign 0.45
+        yalign 0.4
+        background None
 
         vbox:
             spacing 10
-            text "Редактирование перевода для: {font=Homifont.ttf}[word]{/font}"
+            text "{color=#000000} Редактирование перевода для: {font=Homifont.ttf}[word]{/font}"
 
             input value VariableInputValue("local_temp"):
                 length 30
@@ -1819,15 +1847,18 @@ screen edit_translation_screen(word):
             hbox:
                 spacing 20
 
-                textbutton "Сохранить":
+                textbutton "{color=#000000} Сохранить":
                     action [
                         Function(set_translation, word, local_temp),
                         SetScreenVariable("closing", True)
                     ]
 
-                textbutton "Отмена":
+                textbutton "{color=#000000} Отмена":
                     action SetScreenVariable("closing", True)
 
     if closing:
         timer 0.8 action Return()
 
+screen key_handler:
+    text "key_handler активен" xalign 0.5 yalign 0.1 color "#f00"
+    key "k" action Function(show_dictionary_once)
