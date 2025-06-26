@@ -1,10 +1,10 @@
-define p1 = Character('[viname]', color="#ffff", what_callback=translate_filter)
-define p2 = Character('Краули', color="#ffff", what_callback=translate_filter)
-define p3 = Character('Сильваир', color="#ffff", what_callback=translate_filter)
-define p4 = Character('Чопт', color="#ffff", what_callback=translate_filter)
-define p5 = Character('Скарлателла', color="#ffff", what_callback=translate_filter)
-define p6 = Character('Касси', color="#ffff", what_callback=translate_filter)
-define e = Character('ÃêÐ¯Û¥√╬µ', color="#ffff", what_callback=translate_filter)
+define p1 = Character('[viname]', color="#ffff")
+define p2 = Character('Краули', color="#ffff")
+define p3 = Character('Сильваир', color="#ffff")
+define p4 = Character('Чопт', color="#ffff")
+define p5 = Character('Скарлателла', color="#ffff")
+define p6 = Character('Касси', color="#ffff")
+define e = Character('ÃêÐ¯Û¥√╬µ', color="#ffff")
 
 label start:
 
@@ -12,6 +12,7 @@ label start:
 
     $ normalize_human_dict()
     $ migrate_human_dict()
+    show screen key_handler
 
     if persistent.first_playthrough_done:
         jump dict 
@@ -114,14 +115,20 @@ label name:
 
         jump name
 
-    else:
+    elif viname == "Адам":
+
         jump intro_text
+
+    else:
+        jump intro
 
 label hardmode:
 
     $ dictionary_button = False
 
     scene black
+
+    ##Слышим тяжелый удар, а затем тяжелое дыхание
 
     ##экран темный, шорох, Адами просыпается и поднимается с колен. видим стартовую сцену из оригинальной игры
 
