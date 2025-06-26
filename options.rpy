@@ -215,5 +215,6 @@ init python:
     config.developer = True
 
 
-define config.say_menu_text_filter = translate_filter
+config.say_menu_text_filter = combined_filter
+
 config.overlay_screens.append("key_handler")
