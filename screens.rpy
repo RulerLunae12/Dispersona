@@ -1675,6 +1675,13 @@ screen human_dictionary():
     tag menu
     modal True
     default closing = False
+    default vis_background = False
+    default is_dictionary_open = True 
+
+    on "show" action SetScreenVariable("vis_background", True), With(dissolve)
+
+    if vis_background:
+        add Solid("#000C", xsize=1920, ysize=1080)
 
     default temp_edits = {
         word: {"translation": data["translation"] if isinstance(data, dict) else data}
@@ -1683,7 +1690,6 @@ screen human_dictionary():
     }
 
     fixed at (fadeout_all if closing else fadein_all):
-        add Solid("#000C") xysize (config.screen_width, config.screen_height)
 
         frame:
             background "gui/blocknote/bn.png"
@@ -1748,7 +1754,8 @@ screen human_dictionary():
                                 text_style "dictionary_translation"
 
     if closing:
-        timer 0.8 action Return("human_dictionary")
+        timer 0.8 action [SetVariable("is_dictionary_open", False), Return()]
+
 
 screen show_dictionary_button():
     if dictionary_button:
