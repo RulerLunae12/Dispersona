@@ -4,6 +4,7 @@ default persistent.first_cleanup_done = False
 define local_temp = ""
 default persistent.first_playthrough_done = False
 default dictionary_button = True
+default closing = False
 
 define homifont = "fonts/Homifont.ttf"
 
@@ -30,6 +31,7 @@ label show_translation_screen:
     $ temp_translation = persistent.human_dict.get(word, {}).get("translation", "")
     $ _window_hide()
     call screen enter_translation_screen(word=word)
+    $ _window_show()
     return
     
 label dev_cleanup:
@@ -44,7 +46,3 @@ init python:
             renpy.call_in_new_context("call_translation", word)
 
     config.hyperlink_callback = on_hyperlink_clicked
-
-    def show_dictionary_once():
-        if not renpy.has_screen("human_dictionary"):
-            renpy.call_in_new_context("show_dictionary")
