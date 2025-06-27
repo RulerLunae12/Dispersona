@@ -8,6 +8,12 @@ label call_translation(word):
     call enter_translation_screen(word) from _call_enter_translation_screen
     return
 
+label enter_translation_screen(word):
+    $ value = persistent.human_dict.get(word, "")
+    $ temp_translation = value.get("translation", "") if isinstance(value, dict) else value
+    call screen enter_translation_screen(word=word)
+    return
+
 init python:
 
     def register_word(word):
@@ -169,3 +175,15 @@ label edit_translation(word):
         $ persistent.human_dict[word] = local_temp
         $ renpy.save_persistent()
     return
+
+init python:
+    def toggle_dictionary():
+        if renpy.has_screen("human_dictionary"):
+            renpy.store.closing = True
+            renpy.restart_interaction()
+        else:
+            renpy.call_in_new_context("show_dictionary")
+
+    config.underlay.append(
+        renpy.Keymap(K_k=toggle_dictionary)
+    )
