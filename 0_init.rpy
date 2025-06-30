@@ -4,11 +4,18 @@ default persistent.first_cleanup_done = False
 define local_temp = ""
 default persistent.first_playthrough_done = False
 default dictionary_button = True
-default closing = False
+default dictionary_screen_open = False
+default closing_dict = False
+default persistent.dictionary_page = 0
+default from_edit_screen = False
+default save_page = 1
 
 define homifont = "fonts/Homifont.ttf"
 
 init python:
+
+    if not hasattr(persistent, "dictionary_page"):
+        persistent.dictionary_page = 0
 
     dictionary_button = False
 
@@ -17,12 +24,16 @@ init python:
 
     config.say_menu_text_filter = None 
 
+    fade_transition = Dissolve(0.35)
+
     config.overlay_screens.append("show_dictionary_button")
 
 label show_dictionary:
+    $ from_edit_screen = False
     $ _window_hide()
     $ init_temp_edits()
     call screen human_dictionary()
+    $ from_edit_screen = False
     $ _window_show()
     return
 
@@ -37,6 +48,12 @@ label show_translation_screen:
 label dev_cleanup:
     $ clean_unused_words()
     return
+
+label return_to_dictionary:
+    with fade_transition
+    call screen human_dictionary
+    return
+
 
 init python:
     
