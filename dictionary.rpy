@@ -169,21 +169,32 @@ init python:
         }
 
 label edit_translation(word):
+    $ from_edit_screen = True
     $ local_temp = ""
-    call screen edit_translation_screen(word)
+
+    $ _return = renpy.call_screen("edit_translation_screen", word=word)
+
     if _return == "save":
         $ persistent.human_dict[word] = local_temp
         $ renpy.save_persistent()
+
+    call screen human_dictionary()
+    $ from_edit_screen = False
     return
 
-init python:
-    def toggle_dictionary():
-        if renpy.has_screen("human_dictionary"):
-            renpy.store.closing = True
-            renpy.restart_interaction()
+
+init -1 python:
+
+    def toggle_dictionary_screen():
+        renpy.notify("Текущий статус: " + str(dictionary_screen_open))
+        if dictionary_screen_open:
+            renpy.notify("")
+            store.closing_dict = True
         else:
+            renpy.notify("")
             renpy.call_in_new_context("show_dictionary")
 
     config.underlay.append(
-        renpy.Keymap(K_k=toggle_dictionary)
+        renpy.Keymap(K_k=toggle_dictionary_screen)
     )
+
