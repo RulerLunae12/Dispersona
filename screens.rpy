@@ -454,76 +454,77 @@ style main_menu_vbox:
 ## экран предназначен для использования с одним или несколькими дочерними
 ## элементами, которые трансклюдируются (помещаются) внутрь него.
 
-screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
 
+screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
+    tag menu
     style_prefix "game_menu"
 
-    if main_menu:
-        add gui.main_menu_background
-    else:
-        add gui.game_menu_background
+    add "gui/окно загрузки/z_bg.png" at truecenter
 
-    frame:
-        style "game_menu_outer_frame"
+    text title:
+        xpos 0.5
+        ypos 0.02
+        xanchor 0.5
+        style "menu_title_text"
 
-        hbox:
-
-            ## Резервирует пространство для навигации.
-            frame:
-                style "game_menu_navigation_frame"
-
-            frame:
-                style "game_menu_content_frame"
-
-                if scroll == "viewport":
-
-                    viewport:
-                        yinitial yinitial
-                        scrollbars "vertical"
-                        mousewheel True
-                        draggable True
-                        pagekeys True
-
-                        side_yfill True
-
-                        vbox:
-                            spacing spacing
-
-                            transclude
-
-                elif scroll == "vpgrid":
-
-                    vpgrid:
-                        cols 1
-                        yinitial yinitial
-
-                        scrollbars "vertical"
-                        mousewheel True
-                        draggable True
-                        pagekeys True
-
-                        side_yfill True
-
-                        spacing spacing
-
-                        transclude
-
-                else:
-
-                    transclude
-
-    use navigation
-
-    textbutton _("Вернуться"):
-        style "return_button"
-
+    imagebutton:
+        idle "gui/окно загрузки/z-str0.png"
+        hover "gui/окно загрузки/z-str2.png"
         action Return()
+        align (0.98, 0.04)
+        xoffset -30
+        yoffset 20
 
-    label title
+    hbox:
+        align (0.5, 0.2)
+        spacing 80
 
-    if main_menu:
-        key "game_menu" action ShowMenu("main_menu")
+        textbutton "История" action ShowMenu("history")
+        textbutton "Сохранить" action ShowMenu("save")
+        textbutton "Загрузить" action ShowMenu("load")
+        textbutton "Настройки" action ShowMenu("preferences")
+        textbutton "Главное меню" action MainMenu()
+        textbutton "Об игре" action ShowMenu("about")
+        textbutton "Помощь" action ShowMenu("help")
+        textbutton "Выход" action Quit()
 
+    fixed:
+        xpos 0.04
+        ypos 0.45
+        xanchor 0.0
+        yanchor 0.0
+        spacing 30
+
+        imagebutton:
+            idle "gui/окно загрузки/z-u1.png"
+            hover "gui/окно загрузки/z-u2.png"
+            action [SetVariable("save_page", max(1, save_page - 1))]
+            xpos 60
+            ypos -60
+
+        textbutton "АВТОСОХРАНЕНИЕ" action FilePage("auto") style "savebox_button" ypos -5 xpos -12
+        textbutton "БЫСТР. СОХР." action FilePage("quick") style "savebox_button" ypos 65 xpos 15
+        textbutton "1" action FilePage(1) style "savebox_button" ypos 135 xpos 10
+        textbutton "2" action FilePage(2) style "savebox_button" ypos 205 xpos 10
+        textbutton "3" action FilePage(3) style "savebox_button" ypos 275 xpos 10
+        textbutton "4" action FilePage(4) style "savebox_button" ypos 345 xpos 10
+        textbutton "5" action FilePage(5) style "savebox_button" ypos 415 xpos 10
+
+        imagebutton:
+            idle "gui/окно загрузки/z-d1.png"
+            hover "gui/окно загрузки/z-d2.png"
+            action [SetVariable("save_page", min(5, save_page + 1))]
+            xpos 60
+            ypos 500
+
+    grid 4 3 spacing 20 xpos 0.25 ypos 0.4:
+        $ first_slot = (save_page - 1) * 12 + 1
+        $ last_slot = first_slot + 11
+
+        for i in range(first_slot, last_slot + 1):
+            add FileSlot(i)
+
+# конец экрана game_menu
 
 style game_menu_outer_frame is empty
 style game_menu_navigation_frame is empty
@@ -538,11 +539,41 @@ style game_menu_label_text is gui_label_text
 style return_button is navigation_button
 style return_button_text is navigation_button_text
 
+style savebox_button:
+    color "#999999"
+    hover_color "#573708"
+    xminimum 120
+    yminimum 40
+    padding (1, 10)
+
+style menu_title_text:
+    size 128
+    color "#999999"
+    font "AmaticSC-Regular.ttf"
+    text_align 0.5
+    xalign 0.5
+
+style game_menu_button_text:
+    color "#999999"
+    hover_color "#573708"
+    font "AmaticSC-Regular.ttf" 
+    size 55
+    xalign 0.5
+    yalign 0.5
+
+style savebox_button_text:
+    font "ofont.ru_Bebas Neue.ttf"
+    size 30
+    color "#FFF"
+    hover_color "#3a280c"
+    xalign 0.5
+    yalign 0.5
+
 style game_menu_outer_frame:
     bottom_padding 45
     top_padding 180
 
-    background "gui/overlay/game_menu.png"
+    background "gui/окно загрузки/z_bg.png"
 
 style game_menu_navigation_frame:
     xsize 420
@@ -626,7 +657,7 @@ screen save():
 
     tag menu
 
-    use file_slots(_("Сохранить"))
+    use game_menu("Сохранить")
 
 
 screen load():
@@ -1326,9 +1357,6 @@ style notify_text is gui_text
 style notify_frame:
     ypos gui.notify_ypos
 
-    background Frame("gui/notify.png", gui.notify_frame_borders, tile=gui.frame_tile)
-    padding gui.notify_frame_borders.padding
-
 style notify_text:
     properties gui.text_properties("notify")
 
@@ -1654,6 +1682,10 @@ transform fadein_all:
     alpha 0.0
     linear 0.8 alpha 1.0
 
+transform fadein_all2:
+    alpha 0.0
+    linear 0.8 alpha 0.8
+
 transform fadeout_all:
     alpha 1.0
     linear 0.5 alpha 0.0
@@ -1671,23 +1703,71 @@ style history_text:
     ruby_line_leading 12
     ruby_style style.ruby_style
 
+style label_dictionary:
+    xalign 0.4 
+    ypos 22
+    size 50 
+    color "#222"
+    font "ofont.ru_Bebas Neue.ttf"
+
+style translate_word:
+    size 28 
+    xsize 180 
+    yalign 0.5
+    color "#222"
+
+style page_label is default:
+    font "ofont.ru_Bebas Neue.ttf"
+    size 26
+    color "#333"
+
+style dictionary_word is default:
+    font "Homifont.ttf"
+    size 28
+
+style dictionary_translation is default:
+    size 28
+    color "#222"
+    hover_color "#951b1b"
+    italic True
+    font "ofont.ru_TippyToes Bold.ttf"
+
 screen human_dictionary():
     tag menu
     modal True
     default closing = False
     default vis_background = False
-    default is_dictionary_open = True 
 
-    on "show" action SetScreenVariable("vis_background", True), With(dissolve)
+    default current_page = persistent.dictionary_page if hasattr(persistent, "dictionary_page") else 0
+    $ dictionary_screen_open = True
+
+    on "show" action [
+        SetScreenVariable("vis_background", True),
+        (With(dissolve) if not from_edit_screen else NullAction())
+    ]
+
+    on "show" action SetVariable("dictionary_screen_open", True)
+    on "hide" action SetVariable("dictionary_screen_open", False)
+
+    if closing_dict:
+        $ closing = True
 
     if vis_background:
-        add Solid("#000C", xsize=1920, ysize=1080)
+        if from_edit_screen == True:
+            add Solid("#000C", xsize=1920, ysize=1080)
+        else:
+            add Solid("#000C", xsize=1920, ysize=1080) at (fadeout_all if closing else fadein_all)
 
     default temp_edits = {
         word: {"translation": data["translation"] if isinstance(data, dict) else data}
         for word, data in persistent.human_dict.items()
         if (isinstance(data, dict) and data.get("translation", "").strip() != "") or isinstance(data, str)
     }
+
+    $ all_words = sorted(temp_edits.keys())
+    $ words_per_page = 12
+    $ total_pages = (len(all_words) - 1) // words_per_page + 1 if all_words else 1
+    $ page_words = all_words[current_page * words_per_page : (current_page + 1) * words_per_page]
 
     fixed at (fadeout_all if closing else fadein_all):
 
@@ -1704,23 +1784,41 @@ screen human_dictionary():
                 xsize 600
                 ysize 800
 
-            label _("Словарь") xalign 0.4 ypos 25 text_color "#222"
+            text "Словарь" style "label_dictionary"
 
             imagebutton:
-                idle "gui/blocknote/bn_x_0.png"
-                hover "gui/blocknote/bn_x_1.png"
+                idle "gui/blocknote/bn_0.png"
+                hover "gui/blocknote/bn_1.png"
                 action SetScreenVariable("closing", True)
-                xalign 0.78
+                xalign 0.76
                 yalign 0.032 
                 focus_mask True
 
-            imagebutton:
-                idle "gui/blocknote/bn_right_1.png"
-                hover "gui/blocknote/bn_right_0.png"
-                action SetScreenVariable("closing", True)
-                xalign 0.77
-                yalign 0.88
-                focus_mask True
+            if current_page < total_pages - 1:
+                imagebutton:
+                    idle "gui/blocknote/bn_right_0.png"
+                    hover "gui/blocknote/bn_right_1.png"
+                    action [
+                        SetScreenVariable("current_page", current_page + 1),
+                        SetVariable("persistent.dictionary_page", current_page + 1),
+                        With(dissolve)
+                    ]
+                    xalign 0.76
+                    yalign 0.88
+                    focus_mask True
+
+            if current_page > 0:
+                imagebutton:
+                    idle "gui/blocknote/bn_left_1.png"
+                    hover "gui/blocknote/bn_left_0.png"
+                    action [
+                        SetScreenVariable("current_page", current_page - 1),
+                        SetVariable("persistent.dictionary_page", current_page - 1),
+                        With(dissolve)
+                    ]
+                    xalign 0.14
+                    yalign 0.88
+                    focus_mask True
 
             viewport:
                 xsize 520
@@ -1734,28 +1832,35 @@ screen human_dictionary():
                 vbox:
                     spacing 4
 
-                    for word in sorted(temp_edits.keys()):
+                    for word in page_words:
                         hbox:
                             spacing 12
                             xfill True
                             yalign 0.5
 
-                            text "{font=Homifont.ttf}[word]{/font}" size 22 xsize 180 yalign 0.5
+                            text "{font=Homifont.ttf}[word]{/font}" style "translate_word"
 
                             textbutton (
                                 persistent.human_dict[word].get("translation", "")
                                 if isinstance(persistent.human_dict[word], dict)
                                 else persistent.human_dict[word] or "Добавить перевод"
                             ):
-                                action Call("edit_translation", word)
-                                text_color "#01141b"
+                                action [With(fade_transition), Call("edit_translation", word)]
                                 background None
                                 yalign 0.5
                                 text_style "dictionary_translation"
 
-    if closing:
-        timer 0.8 action [SetVariable("is_dictionary_open", False), Return()]
+            text "[current_page + 1] / [total_pages]":
+                xalign 0.44
+                yalign 0.88
+                style "page_label"
 
+    if closing:
+        timer 0.8 action [
+            SetVariable("persistent.dictionary_page", current_page),
+            SetVariable("closing_dict", False),
+            Return()
+        ]
 
 screen show_dictionary_button():
     if dictionary_button:
@@ -1779,6 +1884,12 @@ screen show_dictionary_button():
                 focus_mask None
                 action Function(renpy.call_in_new_context, "show_dictionary")
 
+style trans_button_text:
+    font "ofont.ru_Bebas Neue.ttf"
+    color "#000000"
+    hover_color "#7d432e"
+    size 40
+
 screen enter_translation_screen(word, translation=None):
     modal True
     default closing = False
@@ -1789,83 +1900,112 @@ screen enter_translation_screen(word, translation=None):
     if not hasattr(store, "temp_translation") or temp_translation is None:
         $ temp_translation = translation or ""
 
-    add Solid("#000C") at (fadeout_all if closing else fadein_all)
+    fixed at (fadeout_all if closing else fadein_all):
 
-    add "gui/blocknote/frame.png" xalign 0.5 yalign 0.5
+        add Solid("#000C", xsize=1920, ysize=1080)
 
-    frame:
-        at (fadeout_all if closing else fadein_all)
-        padding (20, 20)
-        xalign 0.45
-        yalign 0.4
-        background None
+        add "gui/blocknote/frame.png" xalign 0.5 yalign 0.5
 
-        vbox:
-            spacing 10
-            text "{color=#000000} Введите перевод для: {font=Homifont.ttf}[word]{/font}" xalign 0.1
+        frame:
+            xalign 0.5
+            yalign 0.5
+            xsize 0.99
+            ysize 0.99
+            background Solid("#1a1a1a20")  
+            padding (40, 40)
 
-            input:
-                value VariableInputValue("temp_translation")
-                length 30
-                xsize 300
-                allow "abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьыъэюя -ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-                copypaste True
+            vbox:
+                spacing 50
+                xalign 0.5
+                yalign 0.5
 
-            hbox:
-                spacing 20
+                text "Введите перевод для {font=Homifont.ttf}[word]{/font}":
+                    font "ofont.ru_Bebas Neue.ttf"
+                    color "#000000"
+                    size 48
+                    xalign 0.5
 
-                textbutton "{color=#000000} Сохранить":
-                    action [
-                        Function(set_translation, word, temp_translation),
-                        SetScreenVariable("closing", True)
-                    ]
+                input:
+                    value VariableInputValue("temp_translation")
+                    length 30
+                    xsize 500
+                    allow "abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьыъэюя -ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+                    copypaste True
+                    font "ofont.ru_Bebas Neue.ttf"
+                    size 40
+                    xalign 0.5
+                    color "#000000"
 
-                textbutton "{color=#000000} Отмена":
-                    action SetScreenVariable("closing", True)
+                hbox:
+                    spacing 60
+                    xalign 0.5
+
+                    textbutton "Сохранить":
+                        text_style "trans_button_text"
+                        action [
+                            Function(set_translation, word, temp_translation),
+                            SetScreenVariable("closing", True)
+                        ]
+
+                    textbutton "Отмена":
+                        text_style "trans_button_text"
+                        action SetScreenVariable("closing", True)
 
     if closing:
         timer 0.6 action Return()
 
 screen edit_translation_screen(word):
-    modal True
-    default closing = False
 
-    add Solid("#000C") at (fadeout_all if closing else fadein_all)
+    modal True
+
+    add Solid("#000C")
 
     add "gui/blocknote/frame.png" xalign 0.5 yalign 0.5
 
     frame:
-        at (fadeout_all if closing else fadein_all)
-        padding (20, 20)
-        xalign 0.45
-        yalign 0.4
-        background None
+        xalign 0.5
+        yalign 0.5
+        xsize 0.99
+        ysize 0.99
+        background Solid("#1a1a1a20")
+        padding (40, 40)
 
         vbox:
-            spacing 10
-            text "{color=#000000} Редактирование перевода для: {font=Homifont.ttf}[word]{/font}"
+            spacing 50
+            xalign 0.5
+            yalign 0.5
+
+            text "Измените перевод для {font=Homifont.ttf}[word]{/font}":
+                font "ofont.ru_Bebas Neue.ttf"
+                color "#000000"
+                size 45
+                xalign 0.5
 
             input value VariableInputValue("local_temp"):
                 length 30
-                xsize 400
+                xsize 500
                 allow "abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьыъэюя -ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
                 copypaste True
+                font "ofont.ru_Bebas Neue.ttf"
+                size 40
+                xalign 0.5
+                color "#000000"
 
             hbox:
                 spacing 20
+                xalign 0.5
 
-                textbutton "{color=#000000} Сохранить":
+                textbutton "Сохранить":
+                    text_style "trans_button_text"
                     action [
                         Function(set_translation, word, local_temp),
-                        SetScreenVariable("closing", True)
+                        SetVariable("edit_translation_screen", True),
+                        Return()
                     ]
 
-                textbutton "{color=#000000} Отмена":
-                    action SetScreenVariable("closing", True)
-
-    if closing:
-        timer 0.8 action Return()
-
-screen key_handler:
-    text "key_handler активен" xalign 0.5 yalign 0.1 color "#f00"
-    key "k" action Function(show_dictionary_once)
+                textbutton "Отмена":
+                    text_style "trans_button_text"
+                    action [
+                        SetVariable("edit_translation_screen", True),
+                        Return()
+                    ]
